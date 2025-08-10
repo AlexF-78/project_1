@@ -1,11 +1,11 @@
-import sys
-import os
-from unittest.mock import patch, MagicMock
-import pytest
 import json
+import os
+import sys
+from unittest.mock import MagicMock, patch
+
 
 # Добавляем путь к src в PYTHONPATH
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def test_main_success():
@@ -14,9 +14,7 @@ def test_main_success():
             patch('src.views.generate_report') as mock_report, \
             patch('src.views.get_currency_rates') as mock_curr, \
             patch('src.views.get_stock_price') as mock_stock, \
-            patch('src.views.logger') as mock_logger, \
             patch('builtins.open') as mock_open:
-        # Настраиваем моки
         test_transactions = [{
             "Дата операции": "01.04.2023 12:00",
             "Номер карты": "1234567890123456",
@@ -53,5 +51,3 @@ def test_main_success():
         mock_report.assert_called_once_with(test_transactions)
         mock_curr.assert_called_once()
         mock_stock.assert_called_once()
-
-

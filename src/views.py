@@ -2,11 +2,9 @@ import json
 import logging
 
 from api_data import get_currency_rates, get_stock_price
-from utils import (
+from utils import (  # get_greeting,; read_xlsx_file,
     generate_report,
-    # get_greeting,
     get_transactions_for_month_period,
-    # read_xlsx_file,
     xlsx_transactions,
 )
 
