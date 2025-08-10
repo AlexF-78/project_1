@@ -8,9 +8,59 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "python-dotenv (>=1.1.1,<2.0.0)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry]
+name = "project-1"
+version = "0.1.0"
+packages = [
+    {include = "src", from = "."},
+    {include = "config.py"}
+]
+
+
+[tool.black]
+line-length = 119
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+
+[tool.isort]
+profile = "black"
+line_length = 119
+known_first_party = ["config"]
+lines_after_imports = 2
+
+
+[tool.mypy]
+disallow_untyped_defs = true
+warn_return_any = true
+exclude = "venv"
+
+
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
