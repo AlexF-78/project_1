@@ -1,12 +1,16 @@
 import logging
 from datetime import datetime
 from typing import Dict, List
+
 import pandas as pd
+
 from config import XLSX_PATH
+
 
 # Настройка логгера
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 def get_greeting(current_time: datetime) -> str:
     """Возвращает приветствие по времени суток"""
@@ -24,7 +28,6 @@ def get_greeting(current_time: datetime) -> str:
     # print(greeting)
 
 
-
 def read_xlsx_file(file_path: str = XLSX_PATH) -> List[Dict]:
     """ Считывает XLSX файл и возвращает список словарей"""
     try:
@@ -35,9 +38,9 @@ def read_xlsx_file(file_path: str = XLSX_PATH) -> List[Dict]:
         logger.error(f"Ошибка при чтении файла XLSX: {e}")
         return []
 
+
 xlsx_transactions = read_xlsx_file(XLSX_PATH)
 # print(xlsx_transactions)
-
 
 
 def get_transactions_for_month_period(input_date: str, transactions: list[dict]) -> list[dict]:
