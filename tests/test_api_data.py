@@ -1,7 +1,9 @@
 # tests/test_api_data.py
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from src.api_data import get_stock_price, get_currency_rates
+
+from src.api_data import get_currency_rates, get_stock_price
 
 
 # Тесты для get_stock_price()

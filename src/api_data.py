@@ -1,12 +1,8 @@
 import os
-import time
+from typing import Dict
 
 import requests
-from typing import Dict, List
-from dotenv import load_dotenv
 
-# Загрузка конфигурации
-load_dotenv()
 
 STOCK_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY", "2ZP58APSEP6BGVAO")
 STOCKS = ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]
@@ -56,5 +52,7 @@ def get_currency_rates():
         ]
     except Exception:
         return [{"currency": "USD", "rate": 73.21}, {"currency": "EUR", "rate": 87.08}]
+
+
 rates = get_currency_rates()
 # print(rates)
