@@ -1,4 +1,4 @@
-# import pytest
+import pytest
 import json
 import os
 import sys
@@ -25,16 +25,15 @@ TEST_TRANSACTIONS = [
 ]
 
 
-def test_find_person_transfers_returns_json():
-    """Тест, что функция возвращает валидный JSON"""
+def test_find_person_transfers_returns_list():
+    """Тест, что функция возвращает список"""
     result = find_person_transfers([])
-    assert isinstance(result, str)
-    json.loads(result)  # не должно вызывать исключение
+    assert isinstance(result, list)
 
 
 def test_find_person_transfers_finds_correct_transfers():
     """Тест что функция правильно находит переводы физлицам"""
-    result = json.loads(find_person_transfers(TEST_TRANSACTIONS))
+    result = find_person_transfers(TEST_TRANSACTIONS)
 
     assert len(result) == 3  # Должно найти 3 подходящих транзакции
     descriptions = [t["Описание"] for t in result]
@@ -45,14 +44,28 @@ def test_find_person_transfers_finds_correct_transfers():
 
 def test_find_person_transfers_ignores_non_transfers():
     """Тест, что функция игнорирует неподходящие транзакции"""
-    result = json.loads(find_person_transfers(TEST_TRANSACTIONS))
+    result = find_person_transfers(TEST_TRANSACTIONS)
 
     descriptions = [t["Описание"] for t in result]
     assert "Перевод между счетами" not in descriptions
     assert "Петр В. Магазин" not in descriptions
 
 
+def test_find_person_transfers_handles_invalid_data():
+    """Тест обработки некорректных данных"""
+    result = find_person_transfers(TEST_TRANSACTIONS)
+    # Проверяем что строка была проигнорирована
+    assert len(result) == 3
+
+
 def test_find_person_transfers_empty_input():
     """Тест работы с пустым входом"""
-    result = json.loads(find_person_transfers([]))
+    result = find_person_transfers([])
     assert len(result) == 0
+    assert isinstance(result, list)
+
+
+def test_find_person_transfers_with_none():
+    """Тест работы с None входом"""
+    with pytest.raises(TypeError):
+        find_person_transfers(None)

@@ -18,6 +18,11 @@ def find_person_transfers(transactions):
 
     for transaction in transactions:
         try:
+            # Если transaction — строка, пропускаем её
+            if isinstance(transaction, str):
+                logger.warning(f"Пропущена строка: {transaction}")
+                continue
+
             category = transaction.get('Категория', '')
             description = transaction.get('Описание', '')
 
@@ -28,4 +33,6 @@ def find_person_transfers(transactions):
         except Exception as e:
             logger.error(f"Ошибка при обработке транзакции: {e}")
 
-    return json.dumps(person_transfers, ensure_ascii=False, indent=4)
+    return person_transfers
+
+    # return json.dumps(person_transfers, ensure_ascii=False, indent=4)
