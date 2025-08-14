@@ -1,7 +1,11 @@
 # tests/test_api_data.py
+import os
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.api_data import get_currency_rates, get_stock_price
 

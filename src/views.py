@@ -1,13 +1,18 @@
 import json
 import logging
+import os
+import sys
+from datetime import datetime
 
-from api_data import get_currency_rates, get_stock_price
-from utils import (  # get_greeting,; read_xlsx_file,
-    generate_report,
-    get_transactions_for_month_period,
-    xlsx_transactions,
-)
+import pandas as pd
 
+from src.api_data import get_currency_rates, get_stock_price
+from src.reports import spending_by_category
+from src.services import find_person_transfers
+from src.utils import generate_report, get_transactions_for_month_period, xlsx_transactions
+
+
+sys.path.append(os.path.dirname(__file__))
 
 # Настройка логирования ДО всех других операций
 logging.basicConfig(
@@ -24,30 +29,64 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def main(date: str):
+def generate_full_report(date: str):
     """Главная функция"""
-    transactions = get_transactions_for_month_period(date, xlsx_transactions)
+    try:
+        # Преобразуем входную дату из формата YYYY-MM-DD HH:MM:SS в DD.MM.YYYY
+        input_date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+        formatted_date = input_date.strftime("%d.%m.%Y")
 
-    # Генерируем отчёт
-    report = generate_report(transactions)
-    # print(report)
+        # Получение и обработка транзакций
+        transactions = get_transactions_for_month_period(formatted_date, xlsx_transactions)
+        df_transactions = pd.DataFrame(transactions)
 
-    # Получаем данные
-    stock_prices = get_stock_price()
-    currency_rates = get_currency_rates()
+        # Преобразование временных меток
+        datetime_cols = df_transactions.select_dtypes(include=["datetime64"]).columns
+        for col in datetime_cols:
+            df_transactions[col] = df_transactions[col].dt.strftime("%d.%m.%Y")
 
-    # Добавляем курсы валют и акций в отчёт
-    report.update({"currency_rates": currency_rates, "stock_prices": stock_prices})
+        # Анализ данных
+        person_transfers = find_person_transfers(df_transactions.to_dict("records"))
+        target_category = "Супермаркеты"
+        category_spending = spending_by_category(df_transactions, target_category, formatted_date)
 
-    # Сериализуем в JSON
-    json_output = json.dumps(report, ensure_ascii=False, indent=4)
+        # Формирование отчета
+        report = generate_report(transactions)
+        report.update(
+            {
+                "person_transfers": person_transfers,
+                "spending_analysis": {
+                    "category": target_category,
+                    "transactions": category_spending.to_dict("records"),
+                    "total_spent": category_spending["Сумма операции"].sum(),
+                },
+                "currency_rates": get_currency_rates(),
+                "stock_prices": get_stock_price(),
+            }
+        )
 
-    # Сохраняем в файл
-    with open("output.json", "w", encoding="utf-8") as f:
-        f.write(json_output)
+        # Сериализация в JSON
+        def json_serializer(obj):
+            if pd.isna(obj):
+                return None
+            if isinstance(obj, (pd.Timestamp, datetime)):
+                return obj.strftime("%d.%m.%Y")
+            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
-    return json.dumps(report, ensure_ascii=False, indent=4)
+        json_output = json.dumps(report, ensure_ascii=False, indent=4, default=json_serializer)
 
+        # Сохранение в файл
+        with open("output.json", "w", encoding="utf-8") as f:
+            f.write(json_output)
 
-if __name__ == "__main__":
-    print(main("27.07.2019"))
+        return json_output
+
+    except ValueError as e:
+        logger.error(f"Ошибка формата даты: {e}")
+        raise ValueError("Неверный формат даты. Ожидается YYYY-MM-DD HH:MM:SS")
+        logger.error(f"Ошибка при генерации отчета: {e}")
+    except Exception as e:
+        error_msg = {"error": str(e)}
+        with open("output.json", "w", encoding="utf-8") as f:
+            json.dump(error_msg, f)
+        return json.dumps(error_msg, ensure_ascii=False, indent=4)

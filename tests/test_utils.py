@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.utils import (
@@ -153,3 +152,44 @@ def test_empty_transactions(mock_greeting):
 
     assert report["cards"] == []
     assert report["top_transactions"] == []
+
+
+def test_read_xlsx_file_empty_file():
+    """Тест чтения пустого Excel-файла"""
+    with patch('pandas.read_excel') as mock_read:
+        mock_df = MagicMock()
+        mock_df.to_dict.return_value = []
+        mock_read.return_value = mock_df
+
+        result = read_xlsx_file("empty.xlsx")
+        assert result == []
+
+
+def test_transactions_with_invalid_dates():
+    """Тест с некорректными датами в транзакциях"""
+    transactions = [
+        {"Дата операции": "invalid_date", "Сумма": 100},
+        {"Дата операции": "32.13.2023", "Сумма": 200}  # Несуществующая дата
+    ]
+    with patch('src.utils.logger.error') as mock_logger:
+        result = get_transactions_for_month_period("20.04.2023", transactions)
+        assert result == []
+        assert mock_logger.call_count == 1
+
+
+def test_generate_report_with_positive_amounts():
+    """Тест с положительными суммами операций (не должны попадать в top_transactions)"""
+    transactions = [
+        {
+            "Номер карты": "1234567890123456",
+            "Сумма операции": "1000.50",  # Положительная сумма
+            "Бонусы (включая кэшбэк)": "10.00",
+            "Дата операции": "01.04.2023 12:00",
+            "Категория": "Возврат",
+            "Описание": "Возврат средств",
+        }
+    ]
+
+    report = generate_report(transactions)
+    assert len(report['top_transactions']) == 0  # Не должно быть топ-транзакций
+    assert report['cards'][0]['total_spent'] == 1000.50

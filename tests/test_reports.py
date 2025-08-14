@@ -4,10 +4,6 @@ import sys
 import pandas as pd
 import pytest
 
-
-# from datetime import datetime, timedelta
-
-# Добавляем путь к src в PYTHONPATH
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.reports import spending_by_category
