@@ -1,16 +1,72 @@
 [project]
 name = "project-1"
 version = "0.1.0"
-description = ""
+description = "Анализ банковских транзакций"
 authors = [
-    {name = "алексей федулов",email = "fab-78@mail.ru"}
+    {name = "Алексей Федулов",email = "fab-78@mail.ru"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.8"
 dependencies = [
+    "python-dotenv>=1.0.0",
+    "pandas>=1.3.0",       # Для работы с Excel и анализа данных
+    "openpyxl>=3.0.0",     # Для чтения XLSX (требуется pandas)
+    "requests>=2.26.0",    # Для API запросов (курсы валют, акции)
+    "loguru>=0.6.0",       # Альтернатива стандартному logging
+    "pytest>=7.0.0",       # Для тестирования
+    "pytest-cov>=3.0.0",   # Для покрытия кода тестами
 ]
 
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core>=1.0.0"] # ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry]
+name = "project-1"
+version = "0.1.0"
+packages = [
+    {include = "src", from = "."},
+    {include = "config.py"}
+]
+
+
+[tool.black]
+line-length = 119
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+
+[tool.isort]
+profile = "black"
+line_length = 119
+known_first_party = ["config"]
+lines_after_imports = 2
+
+
+[tool.mypy]
+disallow_untyped_defs = true
+warn_return_any = true
+exclude = "venv"
+
+
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
